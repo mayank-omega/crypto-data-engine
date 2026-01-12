@@ -1,0 +1,46 @@
+# Core Framework
+fastapi==0.109.0
+uvicorn[standard]==0.27.0
+pydantic==2.5.3
+pydantic-settings==2.1.0
+
+# Database
+sqlalchemy==2.0.25
+alembic==1.13.1
+psycopg2-binary==2.9.9
+asyncpg==0.29.0
+
+# Cache
+redis==5.0.1
+aioredis==2.0.1
+
+# HTTP Clients
+httpx==0.26.0
+aiohttp==3.9.1
+websockets==12.0
+
+# Crypto & Exchange APIs
+python-binance==1.0.19
+ccxt==4.2.25
+
+# Data Processing
+pandas==2.1.4
+numpy==1.26.3
+
+# Monitoring & Logging
+python-json-logger==2.0.7
+prometheus-client==0.19.0
+
+# Testing
+pytest==7.4.4
+pytest-asyncio==0.23.3
+pytest-cov==4.1.0
+httpx==0.26.0
+
+# Security
+python-dotenv==1.0.0
+cryptography==41.0.7
+
+# Utilities
+python-dateutil==2.8.2
+pytz==2023.3
