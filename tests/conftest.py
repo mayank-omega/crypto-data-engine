@@ -1,4 +1,3 @@
-# See artifact: crypto_conftest
 import pytest
 import asyncio
 from typing import AsyncGenerator

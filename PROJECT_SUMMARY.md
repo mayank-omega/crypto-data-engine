@@ -1,9 +1,12 @@
-# See artifact: crypto_project_summary
 # Crypto Data Engine - Project Summary
 
 ## Overview
 
 This is a **production-grade, enterprise-ready** cryptocurrency market data collection and streaming microservice. This is NOT a demo or prototype - it's a fully functional, scalable system ready for deployment.
+
+# its working but not put to use for now currently just for learning and testing purpose.
+
+# currently it has no proper api used as working currently on some statistical data and theory.
 
 ## What Has Been Built
 
@@ -379,15 +382,3 @@ Monthly costs (approximate):
 - ALB: $20-30
 - Data transfer: $10-50
 - **Total**: ~$160-340/month
-
-## Support and Maintenance
-
-This is a complete, production-ready system. All components are:
-- ✅ Fully implemented
-- ✅ Tested
-- ✅ Documented
-- ✅ Deployable
-- ✅ Scalable
-- ✅ Secure
-
-No additional development is required to use this system in production.
