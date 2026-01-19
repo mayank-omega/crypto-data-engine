@@ -1,9 +1,10 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, Body
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from contextlib import asynccontextmanager
 import logging
 from datetime import datetime
+from typing import Optional
 
 from app.config import get_settings
 from app.database import init_db, close_db
@@ -13,6 +14,10 @@ from app.api.v1 import market_data, websocket
 from app.collectors.binance_collector import BinanceCollector
 from app.collectors.coingecko_collector import CoinGeckoCollector
 from app.collectors.onchain_collector import OnChainCollector
+
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
+import os
 
 # Setup logging
 setup_logging()
@@ -40,10 +45,6 @@ async def lifespan(app: FastAPI):
         # Connect to Redis
         await cache.connect()
         logger.info("Redis connected")
-        
-        # Start data collectors (optional - can be started via API)
-        # Uncomment to auto-start collectors
-        # await start_all_collectors()
         
         logger.info("Application started successfully")
         
@@ -80,10 +81,19 @@ app = FastAPI(
     lifespan=lifespan
 )
 
+# Serve static files
+if os.path.exists("app/static"):
+    app.mount("/static", StaticFiles(directory="app/static"), name="static")
+
+@app.get("/dashboard")
+async def dashboard():
+    """Serve the dashboard HTML"""
+    return FileResponse("app/static/dashboard.html")
+
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Configure appropriately for production
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -122,7 +132,7 @@ app.include_router(
 async def health_check():
     """Health check endpoint."""
     try:
-       # Check database
+        # Check database
         db_status = "healthy"
         try:
             from app.database import engine
@@ -177,10 +187,14 @@ async def root():
 
 # Collector management endpoints
 @app.post("/api/v1/collectors/start")
-async def start_collectors(symbols: list[str] = None):
+async def start_collectors(symbols: Optional[list[str]] = Body(None)):
     """Start data collectors."""
+    # Use symbols from request body, or fall back to settings, or use default
     if symbols is None:
-        symbols = ["BTCUSDT", "ETHUSDT", "BNBUSDT"]
+        symbols = settings.symbols_list  # Use from config
+    
+    # Log what symbols we're using
+    logger.info(f"Starting collectors with symbols: {symbols}")
     
     try:
         # Start collectors in background

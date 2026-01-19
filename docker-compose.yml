@@ -1,115 +1,88 @@
+name: crypto-data-engine
+
 services:
-  # PostgreSQL Database
-  postgres:
-    image: postgres:15-alpine
-    container_name: crypto-postgres
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER:-cryptouser}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-cryptopass}
-      POSTGRES_DB: ${POSTGRES_DB:-crypto_data}
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-cryptouser} -d ${POSTGRES_DB:-crypto_data}"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    networks:
-      - crypto-network
-
-  # Redis Cache
-  redis:
-    image: redis:7-alpine
-    container_name: crypto-redis
-    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-redispass}
-    ports:
-      - "6379:6379"
-    volumes:
-      - redis_data:/data
-    healthcheck:
-      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-redispass}", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    networks:
-      - crypto-network
-
-  # Crypto Data Engine
   crypto-data-engine:
     build:
-      context: .
+      context: "D:/crypto/crypto-data-engine"
       dockerfile: Dockerfile
     container_name: crypto-data-engine
-    environment:
-      # Application
-      ENVIRONMENT: production
-      DEBUG: "false"
-      LOG_LEVEL: INFO
-      
-      # Database
-      POSTGRES_USER: ${POSTGRES_USER:-cryptouser}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-cryptopass}
-      POSTGRES_HOST: postgres
-      POSTGRES_PORT: 5432
-      POSTGRES_DB: ${POSTGRES_DB:-crypto_data}
-      
-      # Redis
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
-      REDIS_PASSWORD: ${REDIS_PASSWORD:-redispass}
-      
-      # APIs
-      BINANCE_API_KEY: ${BINANCE_API_KEY}
-      BINANCE_API_SECRET: ${BINANCE_API_SECRET}
-      BINANCE_TESTNET: ${BINANCE_TESTNET:-false}
-      COINGECKO_API_KEY: ${COINGECKO_API_KEY}
-      
-      # Collection settings
-      COLLECTION_INTERVAL_SECONDS: 60
-      HISTORICAL_DAYS: 365
-    ports:
-      - "8000:8000"
     depends_on:
       postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
+    environment:
+      ENVIRONMENT: production
+      DEBUG: "false"
+      LOG_LEVEL: INFO
+
+      SYMBOLS: "BTCUSDT,ETHUSDT,BNBUSDT,ADAUSDT,SOLUSDT"
+      COLLECTION_INTERVAL_SECONDS: "60"
+      HISTORICAL_DAYS: "365"
+
+      BINANCE_API_KEY: ${BINANCE_API_KEY}
+      BINANCE_API_SECRET: ${BINANCE_API_SECRET}
+      BINANCE_TESTNET: ${BINANCE_TESTNET}
+
+      COINGECKO_API_KEY: ${COINGECKO_API_KEY}
+
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: "5432"
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+
+      REDIS_HOST: redis
+      REDIS_PORT: "6379"
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+    ports:
+      - "8000:8000"
     volumes:
-      - ./app:/app/app
-      - ./alembic:/app/alembic
+      - "D:/crypto/crypto-data-engine/app:/app/app"
+      - "D:/crypto/crypto-data-engine/alembic:/app/alembic"
     networks:
       - crypto-network
     restart: unless-stopped
 
-  # Alembic migrations (run once)
-  migrations:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: crypto-migrations
+  postgres:
+    image: postgres:15-alpine
+    container_name: crypto-postgres
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:-cryptouser}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-cryptopass}
-      POSTGRES_HOST: postgres
-      POSTGRES_PORT: 5432
-      POSTGRES_DB: ${POSTGRES_DB:-crypto_data}
-    depends_on:
-      postgres:
-        condition: service_healthy
-    command: ["sh", "-c", "sleep 5 && alembic upgrade head"]
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     networks:
       - crypto-network
-    profiles:
-      - migrations
 
-volumes:
-  postgres_data:
-    driver: local
-  redis_data:
-    driver: local
+  redis:
+    image: redis:7-alpine
+    container_name: crypto-redis
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - crypto-network
 
 networks:
   crypto-network:
     driver: bridge
+
+volumes:
+  postgres_data:
+  redis_data:

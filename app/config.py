@@ -1,5 +1,5 @@
 from pydantic_settings import BaseSettings
-from typing import Optional
+from typing import Optional, List
 from functools import lru_cache
 
 
@@ -39,6 +39,9 @@ class Settings(BaseSettings):
     # CoinGecko API
     COINGECKO_API_KEY: Optional[str] = None
     
+    # Crypto Symbols to Track
+    SYMBOLS: str = "BTCUSDT,ETHUSDT,BNBUSDT,ADAUSDT,SOLUSDT"
+    
     # Data Collection
     COLLECTION_INTERVAL_SECONDS: int = 60
     HISTORICAL_DAYS: int = 365
@@ -59,6 +62,11 @@ class Settings(BaseSettings):
     # Logging
     LOG_LEVEL: str = "INFO"
     LOG_FORMAT: str = "json"
+    
+    @property
+    def symbols_list(self) -> List[str]:
+        """Get list of symbols from comma-separated string."""
+        return [s.strip().upper() for s in self.SYMBOLS.split(",") if s.strip()]
     
     @property
     def database_url(self) -> str:
